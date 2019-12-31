@@ -5,37 +5,30 @@ const cognitoService = require('./services/cognito');
 const app = express();
 
 const port = 3000;
-const namespace = '/api';
+const apiNamespace = '/api';
 const dataSize = '6mb'; 
 
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false, limit: dataSize }));
 app.use(bodyParser.json({ limit: dataSize }));
 
-app.post(`${namespace}/register`, async (req, res) => {
+app.post(`${apiNamespace}/register`, async (req, res) => {
   try {
     const result = await cognitoService.registerUser(req.body);
-    console.log({result});
     res.json({
       user: {
         email: result.getUsername()
       }
     });
   } catch (error) {
-    console.log({error});
     return error;
   }
 });
 
-app.post(`${namespace}/login`, async (req, res) => {
+app.post(`${apiNamespace}/login`, async (req, res) => {
   try {
     const result = await cognitoService.loginUser(req.body);
-    console.log({result});
-    res.json({
-      user: {
-        email: result.getUsername()
-      }
-    });
+    res.json(result);
   } catch (error) {
     console.log({error});
     return error;

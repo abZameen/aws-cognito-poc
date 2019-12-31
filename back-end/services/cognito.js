@@ -23,15 +23,14 @@ cognitoService.registerUser = (user) => {
   attributeList.push(new AmazonCognitoIdentity.CognitoUserAttribute({ Name: "gender", Value: user.gender }));
   attributeList.push(new AmazonCognitoIdentity.CognitoUserAttribute({ Name: "birthdate", Value: user.dob }));
   attributeList.push(new AmazonCognitoIdentity.CognitoUserAttribute({ Name: "address", Value: user.address }));
-  userPool.signUp(user.email, user.password, attributeList, null, function(error, result){
-    if (error) {
-        console.log(error);
-        throw error;
-    }
-    const cognitoUser = result.user;
-    console.log('user name is ' + cognitoUser.getUsername());
-    return result.user;
-});
+  return new Promise((resolve, reject) => {
+    userPool.signUp(user.email, user.password, attributeList, null, function(error, result) {
+      if (error) {
+          reject(error);
+      }
+      resolve(result.user);
+    });
+  });
 }
 
 cognitoService.loginUser = (credentials) => {
@@ -39,27 +38,24 @@ cognitoService.loginUser = (credentials) => {
       Username : credentials.email,
       Password : credentials.password,
   });
-
-  var userData = {
+  const userData = {
       Username : credentials.email,
       Pool : userPool
   };
-  var cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
-  cognitoUser.authenticateUser(authenticationDetails, {
+  const cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+  return new Promise((resolve, reject) => {
+    cognitoUser.authenticateUser(authenticationDetails, {
       onSuccess: function (result) {
-          console.log('access token + ' + result.getAccessToken().getJwtToken());
-          console.log('id token + ' + result.getIdToken().getJwtToken());
-          console.log('refresh token + ' + result.getRefreshToken().getToken());
-          return {
+          resolve({
             accessToken: result.getAccessToken().getJwtToken(),
             idToken: result.getIdToken().getJwtToken(),
             refreshToken: result.getRefreshToken().getToken()
-          }
+          });
       },
       onFailure: function(error) {
-          console.log(error);
-          throw error;
+        reject(error);
       },
+    });
   });
 }
 
