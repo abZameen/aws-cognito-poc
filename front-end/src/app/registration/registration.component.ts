@@ -16,10 +16,7 @@ export class RegistrationComponent implements OnInit {
   }
 
   onSubmit(user) {
-    console.log('before', user.dob);
     user.dob = moment(new Date(user.dob)).format('YYYY-MM-DD');
-    console.log('after', user.dob);
-    console.log({user});
     this.authService.register(user).subscribe(res => {
       console.log({res});
     }, err => {

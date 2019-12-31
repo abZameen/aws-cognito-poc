@@ -14,7 +14,6 @@ app.use(bodyParser.json({ limit: dataSize }));
 
 app.post(`${namespace}/register`, async (req, res) => {
   try {
-    console.log("got hit");
     const result = await cognitoService.registerUser(req.body);
     console.log({result});
     res.json({
@@ -28,8 +27,19 @@ app.post(`${namespace}/register`, async (req, res) => {
   }
 });
 
-app.post(`${namespace}/login`, (req, res) => {
-  return res.send("User loggedIn");
+app.post(`${namespace}/login`, async (req, res) => {
+  try {
+    const result = await cognitoService.loginUser(req.body);
+    console.log({result});
+    res.json({
+      user: {
+        email: result.getUsername()
+      }
+    });
+  } catch (error) {
+    console.log({error});
+    return error;
+  }
 });
 
 app.listen(port, () => {
