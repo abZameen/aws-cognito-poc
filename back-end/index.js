@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const cognitoService = require('./services/cognito');
 const app = express();
 
 const port = 3000;
@@ -11,8 +12,20 @@ app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false, limit: dataSize }));
 app.use(bodyParser.json({ limit: dataSize }));
 
-app.post(`${namespace}/register`, (req, res) => {
-  return res.send("User created");
+app.post(`${namespace}/register`, async (req, res) => {
+  try {
+    console.log("got hit");
+    const result = await cognitoService.registerUser(req.body);
+    console.log({result});
+    res.json({
+      user: {
+        email: result.getUsername()
+      }
+    });
+  } catch (error) {
+    console.log({error});
+    return error;
+  }
 });
 
 app.post(`${namespace}/login`, (req, res) => {
