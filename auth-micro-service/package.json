@@ -1,11 +1,11 @@
 {
-  "name": "back-end",
+  "name": "auth-micro-service",
   "version": "1.0.0",
-  "description": "Node + Express backend",
+  "description": "An Authentication Micro Service to manage user authentication and authorization.",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start:dev": "nodemon index.js"
   },
   "author": "Ahmad Bilal",
   "license": "ISC",
