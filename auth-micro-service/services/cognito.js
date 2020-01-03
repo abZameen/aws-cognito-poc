@@ -1,4 +1,5 @@
 const AmazonCognitoIdentity = require('amazon-cognito-identity-js');
+global.fetch = require('node-fetch');
 const poolData = {
   UserPoolId: "us-east-1_ipiSTmIQq",
   ClientId: "7q4b97vtn07bnsdpblnaahvb8p"

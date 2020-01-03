@@ -9,10 +9,12 @@ export class AuthService {
   constructor(private http: HttpClient) {
   }
   register (user) {
-    console.log("got user", user);
     return this.http.post(`${this.apiURL}/register`, user);
   }
   login (credentials) {
-    return this.http.post(`${this.apiURL}/login`, credentials);
+    return this.http.post(`${this.apiURL}/login`, credentials, {observe: 'response'});
+  }
+  checkCookie () {
+    return this.http.get(`${this.apiURL}/checkCookie`);
   }
 }
