@@ -1,7 +1,7 @@
 const apiNamespace = '/api';
 
 module.exports = (app) => {
-  app.post(`${apiNamespace}/users`, async (req, res) => {
+  app.get(`${apiNamespace}/users`, async (req, res) => {
     try {
       res.json({
         users: [

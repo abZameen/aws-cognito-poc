@@ -2,7 +2,7 @@ const {
   AWSCognito,
   Cache
 } = require('../services');
-const apiNamespace = '/api';
+const apiNamespace = '/auth';
 
 const cacheService = new Cache(
   '127.0.0.1',

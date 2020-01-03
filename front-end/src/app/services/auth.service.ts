@@ -4,7 +4,7 @@ import { HttpClient } from '@angular/common/http';
 @Injectable()
 export class AuthService {
 
-  apiURL = '/api';
+  apiURL = '/auth';
 
   constructor(private http: HttpClient) {
   }
@@ -12,7 +12,7 @@ export class AuthService {
     return this.http.post(`${this.apiURL}/register`, user);
   }
   login (credentials) {
-    return this.http.post(`${this.apiURL}/login`, credentials, {observe: 'response'});
+    return this.http.post(`${this.apiURL}/login`, credentials, { responseType: 'text' });
   }
   refreshToken () {
     return this.http.get(`${this.apiURL}/refreshToken`);

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import * as moment from 'moment';
-import { AuthService } from '../services/auth.service';
-import { from } from 'rxjs';
+import { AuthService } from '../services';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-registration',
@@ -10,7 +10,7 @@ import { from } from 'rxjs';
 })
 export class RegistrationComponent implements OnInit {
 
-  constructor(private authService: AuthService) { }
+  constructor(private authService: AuthService, private router: Router) { }
 
   ngOnInit() {
   }
@@ -18,8 +18,7 @@ export class RegistrationComponent implements OnInit {
   onSubmit(user) {
     user.dob = moment(new Date(user.dob)).format('YYYY-MM-DD');
     this.authService.register(user).subscribe(res => {
-      console.log({res});
-    }, err => {
+      this.router.navigate(['/login']);
     });
   }
 

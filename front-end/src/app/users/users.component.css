@@ -1,0 +1,24 @@
+.box.flex {
+  display: flex;
+  justify-content: center;
+}
+.box {
+  padding: .5rem;
+  height: 300px;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.03);
+  border-radius: 4px;
+
+  color: #84613D;
+  font-family: "Lucida Console", Monaco, monospace;
+  background: #FDF9EA;
+  border-bottom: 1px solid #F9F2D6;
+  border-right: 1px solid #F9F2D6;
+}
+
+.box p {
+  max-width: 257px;
+  text-align: center;
+  background: rgba(255,255,255,0.5);
+  margin: .25rem;
+  padding: .25rem;
+}
