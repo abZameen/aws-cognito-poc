@@ -1,5 +1,15 @@
-const cognitoService = require('../services/cognito');
+const {
+  AWSCognito,
+  Cache
+} = require('../services');
 const apiNamespace = '/api';
+
+const cacheService = new Cache(
+  '127.0.0.1',
+  '6379',
+  'admin'
+);
+const cognitoService = new AWSCognito();
 
 module.exports = (app) => {
   app.post(`${apiNamespace}/register`, async (req, res) => {
@@ -18,17 +28,18 @@ module.exports = (app) => {
   app.post(`${apiNamespace}/login`, async (req, res) => {
     try {
       const result = await cognitoService.loginUser(req.body);
-      res.cookie('access-token', result.accessToken, {maxAge: 9000000000, httpOnly: true });
-      res.cookie('refresh-token', result.refreshToken, {maxAge: 9000000000, httpOnly: true });
-      res.cookie('id-token', result.idToken, {maxAge: 9000000000, httpOnly: true });
-      res.cookie('test-cookie', 'testdata', {httpOnly: true});
-      res.json(true);
+      res.cookie('id-token', result.idToken, { httpOnly: true });
+      cacheService.writeToCache('refresh-token', result.refreshToken);
+      cacheService.writeToCache('access-token', result.accessToken);
+      cacheService.writeToCache('id-token', result.idToken);
+      cacheService
+      res.send('User logged-in successfully');
     } catch (error) {
       res.status(500).send(error.message);
     }
   });
 
-  app.get(`${apiNamespace}/checkCookie`, async (req, res) => {
+  app.get(`${apiNamespace}/validateToken`, async (req, res) => {
     try {
       res.send(req.cookies);
     } catch (error) {
