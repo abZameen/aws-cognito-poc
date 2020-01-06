@@ -41,7 +41,14 @@ module.exports = (app) => {
 
   app.get(`${apiNamespace}/validateToken`, async (req, res) => {
     try {
-      res.send(req.cookies);
+      const idToken = req.cookies['id-token'];
+      if (!idToken) {
+        throw new Error("id-token cookie is not set.");
+      };
+      const result = await cognitoService.validateToken(idToken);
+      if (result) {
+        res.send('Token validated');
+      }
     } catch (error) {
       res.status(500).send(error.message);
     }
