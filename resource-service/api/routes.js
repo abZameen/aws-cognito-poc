@@ -1,7 +1,8 @@
+const authMiddleware = require('../middlewares/authorization');
 const apiNamespace = '/api';
 
 module.exports = (app) => {
-  app.get(`${apiNamespace}/users`, async (req, res) => {
+  app.get(`${apiNamespace}/users`, authMiddleware.validateToken(), (req, res) => {
     try {
       res.json({
         users: [
@@ -33,7 +34,7 @@ module.exports = (app) => {
         ]
       });
     } catch (error) {
-      res.status(500).send(error.message);
+      res.status(401).send(error.message);
     }
   });
 }

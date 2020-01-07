@@ -1,23 +1,18 @@
 const request = require('request');
 const jwkToPem = require('jwk-to-pem');
 const jwt = require('jsonwebtoken');
-const { Cache } = require('./cache');
 const AmazonCognitoIdentity = require('amazon-cognito-identity-js');
 global.fetch = require('node-fetch');
 
 class AWSCognito {
-  constructor () {
+  constructor (cache) {
     this.poolRegion = 'us-east-1';
     this.poolData = {
       UserPoolId: "us-east-1_ipiSTmIQq",
       ClientId: "7q4b97vtn07bnsdpblnaahvb8p"
     };
     this.userPool = new AmazonCognitoIdentity.CognitoUserPool(this.poolData);
-    this.cacheService = new Cache(
-      '127.0.0.1',
-      '6379',
-      'admin'
-    );
+    this.cacheService = cache;
   }
 
   registerUser(user) {
@@ -65,7 +60,7 @@ class AWSCognito {
   }
 
   async validateToken(idToken) {
-    let jwtKeys = this.cacheService.readFromCache('jwtKeys');
+    let jwtKeys = await this.cacheService.readFromCache('jwtKeys');
     if (!jwtKeys) {
       jwtKeys = await this.setJWTVerificationKeys();
     }
@@ -80,39 +75,48 @@ class AWSCognito {
     if (!pem) {
       throw new Error('Decoded token id is not valid.');
     }
+    return this.verifyJWT(idToken, pem);
+  }
 
-    jwt.verify(token, pem, function (error, payload) {
-      if (error) {
-        throw new Error("Token could not be verified.");
-      } else {
-        return payload;
-      }
+  setJWTVerificationKeys() {
+    const cacheService = this.cacheService;
+    return new Promise((resolve, reject) => {
+      request({
+        url: `https://cognito-idp.${this.poolRegion}.amazonaws.com/${this.poolData.UserPoolId}/.well-known/jwks.json`,
+        json: true
+      }, function (error, response, body) {
+        if (!error && response.statusCode === 200) {
+          const jwtKeys = {};
+          const keys = body['keys'];
+          console.log({keys});
+          for (let i = 0; i < keys.length; i++) {
+            //Convert each key to PEM
+            const kid = keys[i].kid;
+            const modulus = keys[i].n;
+            const exponent = keys[i].e;
+            const keyType = keys[i].kty;
+            const jwk = { kty: keyType, n: modulus, e: exponent };
+            const pem = jwkToPem(jwk);
+            jwtKeys[kid] = pem;
+            cacheService.writeToCache('jwtKeys', jwtKeys);
+            resolve(jwtKeys);
+          }
+        } else {
+          reject(new Error("Unable to download JWKs"));
+        }
+      });
     });
   }
 
-  setJWTVerificationKeys () {
-    request({
-      url: `https://cognito-idp.${this.poolRegion}.amazonaws.com/${this.poolData.UserPoolId}/.well-known/jwks.json`,
-      json: true
-    }, function (error, response, body) {
-      if (!error && response.statusCode === 200) {
-        jwtKeys = {};
-        const keys = body['keys'];
-        for (let i = 0; i < keys.length; i++) {
-          //Convert each key to PEM
-          const kid = keys[i].kid;
-          const modulus = keys[i].n;
-          const exponent = keys[i].e;
-          const keyType = keys[i].kty;
-          const jwk = { kty: keyType, n: modulus, e: exponent };
-          const pem = jwkToPem(jwk);
-          jwtKeys[kid] = pem;
-          this.cacheService.writeToCache('jwtKeys', jwtKeys);
-          return jwtKeys;
+  verifyJWT(token, pem) {
+    return new Promise((resolve, reject) => {
+      jwt.verify(token, pem, function (error, payload) {
+        if (error) {
+          reject(new Error("Token is expired."));
+        } else {
+          resolve(payload);
         }
-      } else {
-        throw new Error("Unable to download JWKs");
-      }
+      });
     });
   }
 };

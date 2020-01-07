@@ -1,4 +1,5 @@
 const { promisify } = require("util");
+const R = require("ramda");
 const expressRedisCache = require("express-redis-cache");
 
 class Cache {
@@ -10,7 +11,7 @@ class Cache {
     try {
       const cacheGet = promisify(this.cache.get).bind(this.cache);
       const data = await cacheGet(key);
-      return (data && data !== {} && data !== '' && data !== null) ? JSON.parse(data[0].body) : undefined;
+      return !R.isEmpty(data) ? JSON.parse(data[0].body) : undefined;
     } catch (error) {
       throw error;
     }

@@ -9,7 +9,7 @@ const cacheService = new Cache(
   '6379',
   'admin'
 );
-const cognitoService = new AWSCognito();
+const cognitoService = new AWSCognito(cacheService);
 
 module.exports = (app) => {
   app.post(`${apiNamespace}/register`, async (req, res) => {
@@ -46,11 +46,13 @@ module.exports = (app) => {
         throw new Error("id-token cookie is not set.");
       };
       const result = await cognitoService.validateToken(idToken);
+      console.log({result});
       if (result) {
         res.send('Token validated');
       }
     } catch (error) {
-      res.status(500).send(error.message);
+      console.log(error.message);
+      res.status(401).send(error.message);
     }
   });
 }
